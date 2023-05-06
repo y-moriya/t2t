@@ -1,9 +1,5 @@
 import { Hono } from "https://deno.land/x/hono@v3.1.8/mod.ts";
 import { serve } from "https://deno.land/std@0.167.0/http/server.ts";
-import {
-  TodoistApi,
-  TodoistRequestError,
-} from "npm:@doist/todoist-api-typescript";
 import { config } from "https://deno.land/x/dotenv/mod.ts";
 
 const app = new Hono();
@@ -20,21 +16,10 @@ app.post("/", async (c) => {
 
   console.log(taskId);
 
-  // create todoist api client
-  const token = config().TODOIST_TOKEN;
-  const api = new TodoistApi(token);
+  const response = await updateTask(taskId);
+  console.log(response);
 
-  let response;
-  try {
-    response = await api.updateTask(taskId, { dueString: "today" });
-    console.log(response);
-  } catch (error) {
-    if (error instanceof TodoistRequestError) {
-      console.error(error.message);
-    }
-  }
-
-  if (response) {
+  if (response && response.ok) {
     return c.json({ result: "ok" }, 200);
   } else {
     return c.json({ result: "ng" }, 500);
@@ -48,4 +33,16 @@ function getTaskId(url: string): string | null {
   const urlObj = new URL(url);
   const taskId = urlObj.searchParams.get("id");
   return taskId;
+}
+
+// function to update task request to todoist api
+async function updateTask(taskId: string): Promise<Response> {
+  return await fetch("https://api.todoist.com/rest/v2/tasks/" + taskId, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + config().TODOIST_TOKEN,
+    },
+    body: JSON.stringify({ due_string: "today" }),
+  });
 }
