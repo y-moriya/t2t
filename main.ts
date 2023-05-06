@@ -1,6 +1,6 @@
 import { Hono } from "https://deno.land/x/hono@v3.1.8/mod.ts";
 import { serve } from "https://deno.land/std@0.167.0/http/server.ts";
-import { config } from "https://deno.land/x/dotenv/mod.ts";
+import { ENV } from "./env.ts";
 
 const app = new Hono();
 
@@ -41,7 +41,7 @@ async function updateTask(taskId: string): Promise<Response> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + config().TODOIST_TOKEN,
+      Authorization: "Bearer " + ENV.TODOIST_TOKEN,
     },
     body: JSON.stringify({ due_string: "today" }),
   });
