@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.167.0/http/server.ts";
 
 const app = new Hono();
 
-app.post("/", async (c) => {
+app.post("/" + Deno.env.get("UUID"), async (c) => {
   const json = await c.req.json();
   const url = json["url"];
   const taskId = getTaskId(url);
